@@ -38,7 +38,7 @@ ApplicationWindow {
         }
     }
 
-    // 재생/정지 상태 → 타이머 동기화
+    // Keep the timer in sync with the play/pause state.
     onIsPlayingChanged: isPlaying ? playTimer.start() : playTimer.stop()
 
     ColumnLayout {
@@ -129,7 +129,7 @@ ApplicationWindow {
             spacing: 6
             enabled: controller.frameCount > 0 && !controller.loading
 
-            // 이전 프레임
+            // Previous frame
             Button {
                 text: "◀"
                 implicitWidth: 40
@@ -148,7 +148,7 @@ ApplicationWindow {
                 onClicked: root.isPlaying = !root.isPlaying
             }
 
-            // 다음 프레임
+            // Next frame
             Button {
                 text: "▶"
                 implicitWidth: 40
@@ -202,7 +202,7 @@ ApplicationWindow {
         }
     }
 
-    // 키보드 단축키
+    // Keyboard shortcuts
     Shortcut { sequence: "Space";   onActivated: root.isPlaying = !root.isPlaying }
     Shortcut { sequence: "Left";    onActivated: { root.isPlaying = false; controller.currentFrame = Math.max(0, controller.currentFrame - 1) } }
     Shortcut { sequence: "Right";   onActivated: { root.isPlaying = false; controller.currentFrame = Math.min(controller.frameCount - 1, controller.currentFrame + 1) } }
