@@ -11,12 +11,35 @@ ApplicationWindow {
     title: "MCAP Viewer"
     color: "#1e1e1e"
 
+    property bool isPlaying: false
+
     FileDialog {
         id: fileDialog
         title: "Open MCAP file"
         nameFilters: ["MCAP files (*.mcap)", "All files (*)"]
-        onAccepted: controller.openFile(currentFile.toString())
+        onAccepted: {
+            root.isPlaying = false
+            controller.openFile(currentFile.toString())
+        }
     }
+
+    Timer {
+        id: playTimer
+        interval: Math.max(16, controller.frameIntervalMs)
+        repeat: true
+        onTriggered: {
+            if (controller.frameCount === 0) {
+                root.isPlaying = false
+                return
+            }
+            var next = controller.currentFrame + 1
+            if (next >= controller.frameCount) next = 0
+            controller.currentFrame = next
+        }
+    }
+
+    // 재생/정지 상태 → 타이머 동기화
+    onIsPlayingChanged: isPlaying ? playTimer.start() : playTimer.stop()
 
     ColumnLayout {
         anchors.fill: parent
@@ -51,7 +74,6 @@ ApplicationWindow {
                     if (currentText.length > 0)
                         controller.selectedTopic = currentText
                 }
-                // Sync when topics list changes
                 Connections {
                     target: controller
                     onSelectedTopicChanged: {
@@ -85,7 +107,6 @@ ApplicationWindow {
                 asynchronous: false
             }
 
-            // Placeholder when no image loaded
             Label {
                 anchors.centerIn: parent
                 text: "Open an MCAP file to view images"
@@ -108,11 +129,35 @@ ApplicationWindow {
             spacing: 6
             enabled: controller.frameCount > 0 && !controller.loading
 
+            // 이전 프레임
             Button {
                 text: "◀"
                 implicitWidth: 40
                 implicitHeight: 34
-                onClicked: controller.currentFrame = Math.max(0, controller.currentFrame - 1)
+                onClicked: {
+                    root.isPlaying = false
+                    controller.currentFrame = Math.max(0, controller.currentFrame - 1)
+                }
+            }
+
+            // Play / Pause
+            Button {
+                implicitWidth: 52
+                implicitHeight: 34
+                text: root.isPlaying ? "⏸ Pause" : "▶ Play"
+                onClicked: root.isPlaying = !root.isPlaying
+            }
+
+            // 다음 프레임
+            Button {
+                text: "▶"
+                implicitWidth: 40
+                implicitHeight: 34
+                onClicked: {
+                    root.isPlaying = false
+                    controller.currentFrame = Math.min(controller.frameCount - 1,
+                                                       controller.currentFrame + 1)
+                }
             }
 
             Slider {
@@ -124,7 +169,10 @@ ApplicationWindow {
                 value: controller.currentFrame
                 snapMode: Slider.SnapAlways
 
-                onMoved: controller.currentFrame = Math.round(value)
+                onMoved: {
+                    root.isPlaying = false
+                    controller.currentFrame = Math.round(value)
+                }
 
                 Connections {
                     target: controller
@@ -133,14 +181,6 @@ ApplicationWindow {
                             frameSlider.value = controller.currentFrame
                     }
                 }
-            }
-
-            Button {
-                text: "▶"
-                implicitWidth: 40
-                implicitHeight: 34
-                onClicked: controller.currentFrame = Math.min(controller.frameCount - 1,
-                                                              controller.currentFrame + 1)
             }
 
             Label {
@@ -162,8 +202,9 @@ ApplicationWindow {
         }
     }
 
-    // Keyboard shortcuts
-    Shortcut { sequence: "Left";  onActivated: controller.currentFrame = Math.max(0, controller.currentFrame - 1) }
-    Shortcut { sequence: "Right"; onActivated: controller.currentFrame = Math.min(controller.frameCount - 1, controller.currentFrame + 1) }
-    Shortcut { sequence: "Ctrl+O"; onActivated: fileDialog.open() }
+    // 키보드 단축키
+    Shortcut { sequence: "Space";   onActivated: root.isPlaying = !root.isPlaying }
+    Shortcut { sequence: "Left";    onActivated: { root.isPlaying = false; controller.currentFrame = Math.max(0, controller.currentFrame - 1) } }
+    Shortcut { sequence: "Right";   onActivated: { root.isPlaying = false; controller.currentFrame = Math.min(controller.frameCount - 1, controller.currentFrame + 1) } }
+    Shortcut { sequence: "Ctrl+O";  onActivated: fileDialog.open() }
 }

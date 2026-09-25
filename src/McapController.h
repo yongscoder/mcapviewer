@@ -18,8 +18,9 @@ class McapController : public QObject {
     Q_PROPERTY(int         currentFrame READ currentFrame  WRITE setCurrentFrame NOTIFY currentFrameChanged)
     Q_PROPERTY(QString     selectedTopic READ selectedTopic WRITE setSelectedTopic NOTIFY selectedTopicChanged)
     Q_PROPERTY(QString     frameSource READ frameSource    NOTIFY frameSourceChanged)
-    Q_PROPERTY(bool        loading     READ loading        NOTIFY loadingChanged)
-    Q_PROPERTY(QString     statusText  READ statusText     NOTIFY statusTextChanged)
+    Q_PROPERTY(bool        loading          READ loading          NOTIFY loadingChanged)
+    Q_PROPERTY(QString     statusText       READ statusText       NOTIFY statusTextChanged)
+    Q_PROPERTY(int         frameIntervalMs  READ frameIntervalMs  NOTIFY frameCountChanged)
 
 public:
     explicit McapController(QObject* parent = nullptr);
@@ -33,6 +34,11 @@ public:
     QString     frameSource()  const { return frameSource_; }
     bool        loading()      const { return loading_; }
     QString     statusText()   const { return statusText_; }
+    int         frameIntervalMs() const {
+        if (frames_.size() < 2) return 33;
+        int ms = (int)((frames_[1].logTime - frames_[0].logTime) / 1000000ULL);
+        return (ms > 0 && ms < 1000) ? ms : 33;
+    }
 
     void setCurrentFrame(int frame);
     void setSelectedTopic(const QString& topic);

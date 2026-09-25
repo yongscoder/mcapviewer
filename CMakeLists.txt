@@ -19,7 +19,7 @@ if(NOT mcap_POPULATED)
   FetchContent_Populate(mcap)
 endif()
 
-add_executable(McapViewer
+add_executable(mcapviewer
   src/main.cpp
   src/mcap_impl.cpp
   src/McapController.cpp
@@ -27,17 +27,17 @@ add_executable(McapViewer
   qml/qml.qrc
 )
 
-target_include_directories(McapViewer PRIVATE
+target_include_directories(mcapviewer PRIVATE
   src
   ${mcap_SOURCE_DIR}/cpp/mcap/include
 )
 
-target_compile_definitions(McapViewer PRIVATE
+target_compile_definitions(mcapviewer PRIVATE
   MCAP_COMPRESSION_ZSTD
   MCAP_COMPRESSION_LZ4
 )
 
-target_link_libraries(McapViewer PRIVATE
+target_link_libraries(mcapviewer PRIVATE
   Qt5::Core
   Qt5::Gui
   Qt5::Quick
