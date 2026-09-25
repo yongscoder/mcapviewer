@@ -147,7 +147,7 @@ ApplicationWindow {
                 text: (controller.currentFrame + 1) + " / " + controller.frameCount
                 color: "#ccc"
                 horizontalAlignment: Text.AlignRight
-                implicitWidth: 80
+                Layout.minimumWidth: 80
                 verticalAlignment: Text.AlignVCenter
             }
         }
